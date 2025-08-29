@@ -1,7 +1,7 @@
 import google.generativeai as genai
 
 # 🔹 Apni Google Gemini API key yahan likho
-GEMINI_API_KEY = "Enter Your Gemini API key"
+GEMINI_API_KEY = "AIzaSyBtA4vuP7K3S26B1zaF2cHqsVRizG-fAZ0"
 
 # Gemini ko configure karo
 genai.configure(api_key=GEMINI_API_KEY)
