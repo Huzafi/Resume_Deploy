@@ -3,6 +3,9 @@ import pypdf
 import docx
 import google.generativeai as genai
 
+# -------------------------
+# 1️⃣ Resume Parser
+# -------------------------
 def parse_resume(file):
     text = ""
     name = file.name.lower()
@@ -22,19 +25,24 @@ def parse_resume(file):
         st.error(f"Error reading file: {e}")
     return text.strip()
 
-
+# -------------------------
+# 2️⃣ Configure Gemini
+# -------------------------
 GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
-
 genai.configure(api_key=GEMINI_API_KEY)
+
+# -------------------------
+# 3️⃣ Feedback Function
+# -------------------------
 def get_feedback(resume_text):
+    try:
+        model = genai.GenerativeModel("gemini-2.5-flash-lite")
         prompt = f"""
 You are an experienced professional recruiter, career coach, and ATS expert.
 Analyze the following resume content and provide a detailed yet concise review.
 
 At the very start of your output, display the candidate's full name on a separate line as:
 **Candidate Name:** <Full Name>
-
-Your output must follow exactly this structure:
 
 ### 1. Executive Summary
 - 1–2 short sentences summarizing candidate fit.
@@ -62,8 +70,6 @@ Your output must follow exactly this structure:
 ### 8. Overall Rating: X/10
 - One-line summary.
 
-At the end, provide a **Scorecard Table** in Markdown format:
-
 | Category                | Score |
 |------------------------|-------|
 | Key Strengths          | X/10  |
@@ -81,7 +87,9 @@ Resume Text:
     except Exception as e:
         return f"❌ Error generating feedback: {e}"
 
-
+# -------------------------
+# 4️⃣ Streamlit UI
+# -------------------------
 st.set_page_config(page_title="Expert Resume Analyzer", page_icon="📄", layout="centered")
 
 st.title("📄 Expert Resume Analyzer Agent")
@@ -90,17 +98,14 @@ st.header("Upload Your Resume or CV")
 
 uploaded_file = st.file_uploader("📂 Upload your resume", type=["pdf", "docx"])
 
-if uploaded_file and api_key:
+if uploaded_file:
     with st.spinner("🔍 Analyzing your resume..."):
         resume_text = parse_resume(uploaded_file)
         if not resume_text:
             st.error("❌ Could not extract text from this file. Please upload a clear resume.")
         else:
-            feedback = get_feedback(resume_text, api_key)
+            feedback = get_feedback(resume_text)
             st.subheader("✅ Analysis Result")
             st.markdown(feedback)
 
-elif uploaded_file and not api_key:
-    st.warning("⚠️ Please enter your Gemini API key to proceed.")
-
-st.caption("Built with  using Streamlit + Google Gemini")
+st.caption("Built with ❤️ using Streamlit + Google Gemini")
